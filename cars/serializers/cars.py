@@ -1,7 +1,53 @@
 from django.db.models import Avg
 from rest_framework import serializers
+from rest_framework.exceptions import NotFound
 
+from cars.exceptions import NotFoundError
+from cars.integrations.nhtsa.client import NHTSAClient
+from cars.models.brand import Brand
 from cars.models.car_model import CarModel
+
+
+class CarCreateSerilizer(serializers.ModelSerializer):
+    make = serializers.CharField(write_only=True)
+    model = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = CarModel
+        fields = ('make', 'model', 'id')
+        read_only_fields = ('id', )
+
+    def create(self, validated_data):
+        client = NHTSAClient()
+        car_models = client.get_models_by_name(validated_data['make'].upper())
+        car_data = car_models[validated_data['model'].upper()]
+
+        brand, _ = Brand.objects.get_or_create(
+            name=validated_data['make'],
+            defaults={'origin_id': car_data['Make_ID'], 'source_name': client.name}
+        )
+
+        car_model, _ = CarModel.objects.get_or_create(
+            name=validated_data['model'],
+            brand=brand,
+            defaults={'origin_id': car_data['Model_ID']}
+        )
+        return car_model
+
+    def validate(self, data):
+        """Validate if model and car exist on external API."""
+        validated_data = super().validate(data)
+
+        client = NHTSAClient()
+        try:
+            car_models = client.get_models_by_name(validated_data['make'].upper())
+        except NotFoundError:
+            raise NotFound(f'Brand {validated_data["make"]} not found')
+
+        if validated_data['model'].upper() not in car_models:
+            raise NotFound(f'Can not find model {validated_data["model"]} for {validated_data["make"]}')
+
+        return validated_data
 
 
 class CarListSerializer(serializers.ModelSerializer):
