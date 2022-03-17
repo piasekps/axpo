@@ -27,3 +27,12 @@ class CarsViewSet(ModelViewSet):
 
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        brand = instance.brand
+
+        instance.delete()
+        if not CarModel.objects.filter(brand=brand).exists():
+            brand.delete()
+
+        return Response(status=status.HTTP_200_OK)
