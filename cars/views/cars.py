@@ -14,6 +14,7 @@ class CarsViewSet(ModelViewSet):
         'create': CarCreateSerilizer,
         'list': CarListSerializer,
     }
+
     def get_serializer_class(self):
         """Return the class to use for the serializer based on the HTTP method and action."""
         log.info('[Test] Action : %s', self.action)

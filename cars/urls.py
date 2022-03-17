@@ -18,11 +18,14 @@ from django.urls import include, path
 from rest_framework import routers
 
 from cars.views.cars import CarsViewSet
+from cars.views.punctations import PunctationsViewSet
+
 
 # URLs managed by DRF router
 router = routers.SimpleRouter()
 # VoIP endpoints
 router.register('cars', CarsViewSet, basename='car')
+router.register('rate', PunctationsViewSet, basename='rate')
 # GET /v<int:version>/calls/{uuid}/auth_info/   # to get authentication information about existing call
 
 urlpatterns = [
