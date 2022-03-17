@@ -18,6 +18,7 @@ from django.urls import include, path
 from rest_framework import routers
 
 from cars.views.cars import CarsViewSet
+from cars.views.populars import PopularsViewSet
 from cars.views.punctations import PunctationsViewSet
 
 
@@ -26,6 +27,7 @@ router = routers.SimpleRouter()
 # VoIP endpoints
 router.register('cars', CarsViewSet, basename='car')
 router.register('rate', PunctationsViewSet, basename='rate')
+router.register('popular', PopularsViewSet, basename='popular')
 # GET /v<int:version>/calls/{uuid}/auth_info/   # to get authentication information about existing call
 
 urlpatterns = [
