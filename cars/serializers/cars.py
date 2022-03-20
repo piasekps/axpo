@@ -18,15 +18,17 @@ class CarCreateSerilizer(serializers.ModelSerializer):
         read_only_fields = ('id', )
 
     def create(self, validated_data):
+        # Get Data from external API
         client = NHTSAClient()
         car_models = client.get_models_by_name(validated_data['make'].upper())
         car_data = car_models[validated_data['model'].upper()]
-
+        # Get car Brand or Create iif not exists
         brand, _ = Brand.objects.get_or_create(
             name=validated_data['make'],
             defaults={'origin_id': car_data['Make_ID'], 'source_name': client.name}
         )
 
+        # Return car model or create new.
         car_model, _ = CarModel.objects.get_or_create(
             name=validated_data['model'],
             brand=brand,
@@ -40,11 +42,13 @@ class CarCreateSerilizer(serializers.ModelSerializer):
 
         client = NHTSAClient()
         try:
+            # First validation check if Make exists
             car_models = client.get_models_by_name(validated_data['make'].upper())
         except NotFoundError:
             raise NotFound(f'Brand {validated_data["make"]} not found')
 
         if validated_data['model'].upper() not in car_models:
+            # Second validation check for Car model
             raise NotFound(f'Can not find model {validated_data["model"]} for {validated_data["make"]}')
 
         return validated_data

@@ -23,6 +23,32 @@ class NHTSAClient:
         return result
 
     def get_models_by_name(self, model_name: str) -> Dict:
-        """Get model list for given vehicle"""
+        """Get model list for given vehicle
+
+        API Response for /vehicles/GetModelsForMake/Honda:
+        {
+            'Count': 438,
+            'Message': 'Response returned successfully',
+            'SearchCriteria': 'Make:Honda',
+            'Results': [{
+                'Make_ID': 474,
+                'Make_Name': 'HONDA',
+                'Model_ID': 1861,
+                'Model_Name': 'Accord'
+            }]
+        }
+
+        Results:
+            {
+                'Honda': {
+                    [{
+                        'Make_ID': 474,
+                        'Make_Name': 'HONDA',
+                        'Model_ID': 1861,
+                        'Model_Name': 'Accord'
+                    }]
+                }
+            }
+        """
         response = self._get_request(f'/vehicles/GetModelsForMake/{model_name}')
         return {item['Model_Name'].upper(): item for item in response['Results']}
